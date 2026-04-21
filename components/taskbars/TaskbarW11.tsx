@@ -6,8 +6,11 @@ export function TaskbarW11({ config }: { config: TaskbarConfig }) {
     <div className="tb-w11">
       <div className="tb-w11-center">
         <div className="tb-w11-icon tb-w11-start">
-          <svg viewBox="0 0 24 24">
-            <path d="M3 5l8-1v8H3zm9-1l9-1v9h-9zM3 13h8v8l-8-1zm9 0h9v9l-9-1z"/>
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <rect x="2"  y="2"  width="9" height="9" fill="#0078D4"/>
+            <rect x="13" y="2"  width="9" height="9" fill="#0078D4"/>
+            <rect x="2"  y="13" width="9" height="9" fill="#0078D4"/>
+            <rect x="13" y="13" width="9" height="9" fill="#0078D4"/>
           </svg>
         </div>
         {config.icons.map((i, idx) => (

@@ -191,7 +191,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sy
   width: 4px; height: 4px; border-radius: 50%; background: #60cdff;
 }
 .tb-w11-icon.running.active::after { width: 16px; border-radius: 2px; }
-.tb-w11-start svg { width: 22px; height: 22px; fill: white; }
+.tb-w11-start svg { width: 22px; height: 22px; }
 .tb-w11-tray {
   position: absolute; right: 0; top: 0; bottom: 0;
   display: flex; align-items: center; gap: 10px;

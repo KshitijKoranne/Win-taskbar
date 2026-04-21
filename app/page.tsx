@@ -13,7 +13,7 @@ import {
   closestCenter,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
-import { ICON_LIBRARY, type LibraryIcon } from "@/lib/icons";
+import { ICON_LIBRARY, CATEGORIES, type LibraryIcon } from "@/lib/icons";
 import {
   DEFAULT_CONFIG,
   loadPresets,
@@ -49,6 +49,8 @@ export default function HomePage() {
   const [presets, setPresets] = useState<Preset[]>([]);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [presetName, setPresetName] = useState("");
+  const [activeCategory, setActiveCategory] = useState<LibraryIcon["category"] | "all">("all");
+  const [search, setSearch] = useState("");
   const taskbarRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -291,9 +293,30 @@ export default function HomePage() {
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleCustomUpload} />
             </div>
+
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search icons..."
+              className="mb-2 w-full rounded-md border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm" />
+
+            <div className="mb-3 flex flex-wrap gap-1">
+              <button onClick={() => setActiveCategory("all")}
+                className={`rounded-md px-2 py-1 text-xs transition ${activeCategory === "all" ? "bg-[var(--accent)] text-black" : "border border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
+                All
+              </button>
+              {CATEGORIES.map(c => (
+                <button key={c.key} onClick={() => setActiveCategory(c.key)}
+                  className={`rounded-md px-2 py-1 text-xs transition ${activeCategory === c.key ? "bg-[var(--accent)] text-black" : "border border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
             <p className="mb-3 text-xs text-[var(--text-dim)]">Click to add to taskbar.</p>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8">
-              {ICON_LIBRARY.map(icon => (
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 max-h-[420px] overflow-auto">
+              {ICON_LIBRARY
+                .filter(i => activeCategory === "all" || i.category === activeCategory)
+                .filter(i => !search.trim() || i.name.toLowerCase().includes(search.trim().toLowerCase()))
+                .map(icon => (
                 <button key={icon.id} onClick={() => addIconFromLibrary(icon)} className="lib-icon">
                   <img src={icon.svgDataUri} alt={icon.name} />
                   <span>{icon.name}</span>
