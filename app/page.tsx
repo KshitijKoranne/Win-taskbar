@@ -40,8 +40,8 @@ const FOLDER_ICON: LibraryIcon = {
   id: "folder",
   name: "Folder",
   color: "#FFD700",
-  category: "productivity",
-  svgDataUri: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI0ZGRDcwMCIgZD0iTTEwIDRINGEyIDIgMCAwMC0yIDJ2MTJhMiAyIDAgMDAyIDJoMTZhMiAyIDAgMDAyLTJWOGEyIDIgMCAwMC0yLTJoLThsLTItMnoiLz48L3N2Zz4=",
+  category: "win7",
+  svgDataUri: "/w7-assets/icons/imageres_3.webp",
 };
 
 export default function HomePage() {
