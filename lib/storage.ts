@@ -1,12 +1,12 @@
 export type WinVersion = "xp" | "w7" | "w10" | "w11";
 
 export type TaskbarIcon = {
-  uid: string;          // unique instance id
-  iconId: string;       // refs library id, OR "custom:<dataUri>"
+  uid: string;
+  iconId: string;
   name: string;
   svgDataUri: string;
   isRunning: boolean;
-  isActive: boolean;    // for Win11 active app indicator
+  isActive: boolean;
 };
 
 export type TrayConfig = {
@@ -16,12 +16,21 @@ export type TrayConfig = {
   showLanguage: boolean;
 };
 
+export type WeatherConfig = {
+  show: boolean;
+  temp: string;
+  condition: string;
+  icon: "sun" | "cloud" | "rain" | "snow" | "storm" | "fog";
+};
+
 export type TaskbarConfig = {
   version: WinVersion;
   icons: TaskbarIcon[];
-  date: string;        // user-typed
-  time: string;        // user-typed
+  date: string;
+  time: string;
   tray: TrayConfig;
+  weather: WeatherConfig;
+  scale: number;
 };
 
 export type Preset = {
@@ -31,16 +40,14 @@ export type Preset = {
   createdAt: number;
 };
 
-export const STORAGE_KEY = "taskbar-builder-presets-v1";
+export const STORAGE_KEY = "taskbar-builder-presets-v2";
 
 export function loadPresets(): Preset[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 }
 
 export function savePresets(presets: Preset[]) {
@@ -54,4 +61,6 @@ export const DEFAULT_CONFIG: TaskbarConfig = {
   date: "Mon, Apr 21",
   time: "10:30 AM",
   tray: { showWifi: true, showVolume: true, showBattery: true, showLanguage: false },
+  weather: { show: true, temp: "24°C", condition: "Partly Cloudy", icon: "cloud" },
+  scale: 1,
 };
