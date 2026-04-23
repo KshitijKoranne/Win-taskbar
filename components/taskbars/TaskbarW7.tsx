@@ -15,7 +15,7 @@ function StartOrb() {
         backgroundPosition: "center",
         cursor: "pointer",
         flexShrink: 0,
-        marginTop: -7, // orb bleeds above taskbar bar like original
+        marginTop: -7,
         zIndex: 10,
       }}
       onMouseEnter={() => setState("hover")}
@@ -27,11 +27,11 @@ function StartOrb() {
   );
 }
 
-export function TaskbarW7({ config }: { config: TaskbarConfig }) {
+export function TaskbarW7({ config, width, height }: { config: TaskbarConfig; width: number; height: number }) {
   return (
-    <div className="tb-w7">
+    <div className="tb-w7" style={{ width, height, minWidth: "unset" }}>
       <StartOrb />
-      <div className="tb-w7-icons">
+      <div className="tb-w7-icons" style={{ flex: 1 }}>
         {config.icons.map(i => (
           <div key={i.uid} className={`tb-w7-icon ${i.isRunning ? "running" : ""}`}>
             <img src={i.svgDataUri} alt={i.name} />

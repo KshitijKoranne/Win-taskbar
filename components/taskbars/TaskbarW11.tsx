@@ -3,23 +3,19 @@ import type { TaskbarConfig } from "@/lib/storage";
 import { Volume2, Wifi, Battery, Languages } from "lucide-react";
 
 const WEATHER_ICONS: Record<string, string> = {
-  sun:   "☀️",
-  cloud: "⛅",
-  rain:  "🌧️",
-  snow:  "❄️",
-  storm: "⛈️",
-  fog:   "🌫️",
+  sun: "☀️", cloud: "⛅", rain: "🌧️", snow: "❄️", storm: "⛈️", fog: "🌫️",
 };
 
-export function TaskbarW11({ config }: { config: TaskbarConfig }) {
+export function TaskbarW11({ config, width, height }: { config: TaskbarConfig; width: number; height: number }) {
   return (
-    <div className="tb-w11">
-      {/* Weather widget — far left, Win11 style */}
+    <div className="tb-w11" style={{ width, height, minWidth: "unset" }}>
+      {/* Weather — absolute far left */}
       {config.weather.show && (
         <div style={{
+          position: "absolute", left: 0, top: 0, bottom: 0,
           display: "flex", alignItems: "center", gap: 8, padding: "0 14px",
           borderRight: "1px solid rgba(255,255,255,0.06)",
-          cursor: "default", flexShrink: 0,
+          cursor: "default",
         }}>
           <span style={{ fontSize: 20, lineHeight: 1 }}>{WEATHER_ICONS[config.weather.icon]}</span>
           <div style={{ lineHeight: 1.2 }}>
@@ -46,13 +42,13 @@ export function TaskbarW11({ config }: { config: TaskbarConfig }) {
         ))}
       </div>
 
-      {/* Tray — far right */}
+      {/* Tray — absolute far right */}
       <div className="tb-w11-tray">
         {config.tray.showLanguage && <span style={{ fontSize: 11 }}>ENG</span>}
         <div style={{ display: "flex", gap: 6 }}>
-          {config.tray.showWifi     && <Wifi     size={14} />}
-          {config.tray.showVolume   && <Volume2  size={14} />}
-          {config.tray.showBattery  && <Battery  size={14} />}
+          {config.tray.showWifi     && <Wifi    size={14} />}
+          {config.tray.showVolume   && <Volume2 size={14} />}
+          {config.tray.showBattery  && <Battery size={14} />}
         </div>
         <div className="tb-w11-clock">
           <div>{config.time}</div>

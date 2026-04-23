@@ -6,43 +6,32 @@ import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, useSensor, useSensors, closestCenter,
 } from "@dnd-kit/core";
-import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { ICON_LIBRARY, CATEGORIES, type LibraryIcon } from "@/lib/icons";
 import {
-  DEFAULT_CONFIG, loadPresets, savePresets,
+  DEFAULT_CONFIG, loadPresets, savePresets, RESOLUTIONS,
   type Preset, type TaskbarConfig, type TaskbarIcon, type WinVersion,
 } from "@/lib/storage";
 import { TaskbarW7 }  from "@/components/taskbars/TaskbarW7";
 import { TaskbarW10 } from "@/components/taskbars/TaskbarW10";
 import { TaskbarW11 } from "@/components/taskbars/TaskbarW11";
 import { SortableIcon } from "@/components/SortableIcon";
-import { Download, Save, Trash2, Upload, FolderOpen } from "lucide-react";
+import { Download, Save, Trash2, Upload } from "lucide-react";
 
 const TASKBARS = { w7: TaskbarW7, w10: TaskbarW10, w11: TaskbarW11 } as const;
-const VERSION_LABELS: Record<WinVersion, string> = { xp: "Windows XP", w7: "Windows 7", w10: "Windows 10", w11: "Windows 11" };
-
-// Resolution presets → scale factor relative to a 1920px-wide container
-const RESOLUTIONS = [
-  { label: "1280×720 (HD)",       scale: 0.67 },
-  { label: "1366×768",            scale: 0.71 },
-  { label: "1440×900",            scale: 0.75 },
-  { label: "1600×900",            scale: 0.83 },
-  { label: "1920×1080 (FHD)",     scale: 1.00 },
-  { label: "2560×1440 (QHD)",     scale: 1.33 },
-  { label: "3840×2160 (4K UHD)",  scale: 2.00 },
-];
-
+const VERSION_LABELS: Record<WinVersion, string> = {
+  xp: "Windows XP", w7: "Windows 7", w10: "Windows 10", w11: "Windows 11",
+};
 const WEATHER_CONDITIONS = ["Sunny","Partly Cloudy","Cloudy","Rainy","Snowy","Stormy","Foggy"] as const;
 const WEATHER_ICONS       = ["sun","cloud","cloud","rain","snow","storm","fog"] as const;
 
-// Inline folder icon SVG as data URI
 const FOLDER_ICON: LibraryIcon = {
-  id: "folder",
-  name: "Folder",
-  color: "#FFD700",
-  category: "win7",
+  id: "folder", name: "Folder", color: "#FFD700", category: "win7",
   svgDataUri: "/w7-assets/icons/imageres_3.webp",
 };
+
+// Width of the preview container in the UI (CSS px)
+const PREVIEW_WIDTH = 900;
 
 export default function HomePage() {
   const [config, setConfig]             = useState<TaskbarConfig>(DEFAULT_CONFIG);
@@ -51,20 +40,27 @@ export default function HomePage() {
   const [presetName, setPresetName]     = useState("");
   const [activeCategory, setActiveCategory] = useState<LibraryIcon["category"] | "all">("all");
   const [search, setSearch]             = useState("");
-  const [resIdx, setResIdx]             = useState(4); // default 1080p
-  const taskbarRef  = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting]       = useState(false);
+
+  // Hidden full-resolution export target
+  const exportRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setPresets(loadPresets()); }, []);
-  // sync scale with resolution choice
-  useEffect(() => { setConfig(c => ({ ...c, scale: RESOLUTIONS[resIdx].scale })); }, [resIdx]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
-  function addIcon(libIcon: LibraryIcon) {
+  const res = RESOLUTIONS[config.resolutionIdx];
+  const tbHeight = res.taskbarHeight[config.version as keyof typeof res.taskbarHeight] ?? 48;
+
+  // Scale factor for the preview: fit PREVIEW_WIDTH
+  const previewScale = PREVIEW_WIDTH / res.w;
+  const previewHeight = tbHeight * previewScale;
+
+  function addIcon(lib: LibraryIcon) {
     const icon: TaskbarIcon = {
-      uid: `${libIcon.id}-${Date.now()}`, iconId: libIcon.id,
-      name: libIcon.name, svgDataUri: libIcon.svgDataUri,
+      uid: `${lib.id}-${Date.now()}`, iconId: lib.id,
+      name: lib.name, svgDataUri: lib.svgDataUri,
       isRunning: false, isActive: false,
     };
     setConfig(c => ({ ...c, icons: [...c.icons, icon] }));
@@ -113,17 +109,36 @@ export default function HomePage() {
   }
 
   async function exportAs(format: "png" | "jpg") {
-    if (!taskbarRef.current) return;
+    if (!exportRef.current) return;
+    setExporting(true);
     try {
+      // Make the hidden element briefly visible for html-to-image to capture
+      exportRef.current.style.visibility = "visible";
+      exportRef.current.style.position = "absolute";
+      exportRef.current.style.top = "-9999px";
+
       const fn = format === "png" ? toPng : toJpeg;
-      const url = await fn(taskbarRef.current, {
+      const url = await fn(exportRef.current, {
         backgroundColor: format === "jpg" ? "#000" : undefined,
-        pixelRatio: 2, cacheBust: true,
+        // pixelRatio: 1 — we're already at native resolution, no upscaling needed
+        pixelRatio: 1,
+        width: res.w,
+        height: tbHeight,
+        cacheBust: true,
       });
+
+      exportRef.current.style.visibility = "hidden";
+      exportRef.current.style.position = "fixed";
+
       const a = document.createElement("a");
-      a.download = `taskbar-${config.version}-${Date.now()}.${format}`;
-      a.href = url; a.click();
-    } catch (err) { console.error(err); }
+      a.download = `taskbar-${config.version}-${res.w}x${tbHeight}.${format}`;
+      a.href = url;
+      a.click();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setExporting(false);
+    }
   }
 
   function savePreset() {
@@ -146,45 +161,74 @@ export default function HomePage() {
       <header className="mb-6 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Taskbar Builder</h1>
-          <p className="text-sm text-[var(--text-dim)]">Build & export custom Windows taskbars</p>
+          <p className="text-sm text-[var(--text-dim)]">Build & export custom Windows taskbars at native resolution</p>
         </div>
-        {/* Save preset + Export — top right */}
         <div className="flex items-center gap-2 flex-wrap">
           <input value={presetName} onChange={e => setPresetName(e.target.value)}
             placeholder="Preset name…" onKeyDown={e => e.key === "Enter" && savePreset()}
             className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm w-36" />
           <button onClick={savePreset}
             className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm hover:border-[var(--accent)]">
-            <Save size={14} /> Save preset
+            <Save size={14} /> Save
           </button>
-          <button onClick={() => exportAs("png")}
-            className="flex items-center gap-1 rounded-md border border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] px-3 py-2 text-sm hover:bg-[var(--accent)]/20">
-            <Download size={14} /> PNG
+          <button onClick={() => exportAs("png")} disabled={exporting}
+            className="flex items-center gap-1 rounded-md border border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] px-3 py-2 text-sm hover:bg-[var(--accent)]/20 disabled:opacity-50">
+            <Download size={14} /> {exporting ? "Exporting…" : "PNG"}
           </button>
-          <button onClick={() => exportAs("jpg")}
-            className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm hover:border-[var(--text-dim)]">
+          <button onClick={() => exportAs("jpg")} disabled={exporting}
+            className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-sm hover:border-[var(--text-dim)] disabled:opacity-50">
             <Download size={14} /> JPG
           </button>
         </div>
       </header>
 
-      {/* PREVIEW */}
+      {/* HIDDEN FULL-RESOLUTION EXPORT TARGET */}
+      {/* Rendered at exact native pixel dimensions — this is what gets exported */}
+      <div
+        ref={exportRef}
+        style={{
+          position: "fixed",
+          top: "-9999px",
+          left: 0,
+          visibility: "hidden",
+          width: res.w,
+          height: tbHeight,
+          overflow: "hidden",
+        }}
+      >
+        <TaskbarComp config={config} width={res.w} height={tbHeight} />
+      </div>
+
+      {/* PREVIEW — CSS-scaled to fit UI */}
       <section className="mb-4">
         <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-dim)]">
-          <span className="uppercase tracking-wider">{VERSION_LABELS[config.version]} — {RESOLUTIONS[resIdx].label}</span>
+          <span className="uppercase tracking-wider">
+            {VERSION_LABELS[config.version]} — {res.label} — taskbar {res.w}×{tbHeight}px
+          </span>
+          <span>Preview scaled to fit (export is exact {res.w}px wide)</span>
         </div>
-        <div className="rounded-lg border border-[var(--border)] bg-[#111] overflow-auto"
-          style={{ backgroundImage: "linear-gradient(45deg,#1a1a1a 25%,transparent 25%),linear-gradient(-45deg,#1a1a1a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1a1a 75%),linear-gradient(-45deg,transparent 75%,#1a1a1a 75%)", backgroundSize:"20px 20px", backgroundPosition:"0 0,0 10px,10px -10px,-10px 0" }}>
-          <div style={{ padding: "40px 20px" }}>
-            <div ref={taskbarRef} style={{ minWidth: 800, transformOrigin: "left center", transform: `scale(${config.scale})`, transition: "transform 0.15s", marginBottom: `${(config.scale - 1) * 48}px` }}>
-              <TaskbarComp config={config} />
-            </div>
+        <div className="rounded-lg border border-[var(--border)] overflow-hidden"
+          style={{
+            width: PREVIEW_WIDTH,
+            height: previewHeight,
+            background: "repeating-conic-gradient(#1a1a1a 0% 25%, #111 0% 50%) 0 0 / 20px 20px",
+          }}>
+          {/* Scale container: render at full width, CSS scale down */}
+          <div style={{
+            width: res.w,
+            height: tbHeight,
+            transform: `scale(${previewScale})`,
+            transformOrigin: "top left",
+          }}>
+            <TaskbarComp config={config} width={res.w} height={tbHeight} />
           </div>
         </div>
-        <p className="mt-1 text-xs text-[var(--text-dim)]">Click icon in taskbar to cycle: idle → running → {config.version === "w11" ? "active → " : ""}remove</p>
+        <p className="mt-1 text-xs text-[var(--text-dim)]">
+          Click icon in taskbar to cycle: idle → running → {config.version === "w11" ? "active → " : ""}remove
+        </p>
       </section>
 
-      {/* DRAG / REORDER (below preview) */}
+      {/* DRAG / REORDER */}
       <section className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Icons in taskbar ({config.icons.length})</h2>
@@ -219,8 +263,7 @@ export default function HomePage() {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-
-        {/* LEFT CONTROLS */}
+        {/* CONTROLS */}
         <section className="space-y-4 lg:col-span-1">
 
           {/* Version */}
@@ -238,12 +281,16 @@ export default function HomePage() {
 
           {/* Resolution */}
           <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
-            <h2 className="mb-3 text-sm font-semibold">Resolution</h2>
-            <div className="space-y-1">
+            <h2 className="mb-3 text-sm font-semibold">Screen resolution</h2>
+            <p className="mb-2 text-xs text-[var(--text-dim)]">
+              Taskbar export will be exactly <strong className="text-[var(--text)]">{res.w}×{tbHeight}px</strong> — native size for {res.label}.
+            </p>
+            <div className="space-y-1 max-h-72 overflow-auto">
               {RESOLUTIONS.map((r, i) => (
-                <button key={r.label} onClick={() => setResIdx(i)}
-                  className={`w-full text-left rounded-md border px-3 py-2 text-sm transition ${resIdx === i ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
-                  {r.label}
+                <button key={r.label} onClick={() => setConfig(c => ({ ...c, resolutionIdx: i }))}
+                  className={`w-full text-left rounded-md border px-3 py-2 text-sm transition flex items-center justify-between ${config.resolutionIdx === i ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
+                  <span>{r.label}</span>
+                  <span className="text-xs opacity-60">{r.w}px wide</span>
                 </button>
               ))}
             </div>
@@ -262,8 +309,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Weather — Win11 only */}
-          <div className={`rounded-lg border bg-[var(--panel)] p-4 ${config.version !== "w11" ? "opacity-40 pointer-events-none border-[var(--border)]" : "border-[var(--border)]"}`}>
+          {/* Weather */}
+          <div className={`rounded-lg border bg-[var(--panel)] p-4 ${config.version !== "w11" ? "opacity-40 pointer-events-none" : ""} border-[var(--border)]`}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Weather <span className="text-xs text-[var(--text-dim)]">(Win 11)</span></h2>
               <label className="flex items-center gap-2 text-xs cursor-pointer">
@@ -302,7 +349,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Saved presets list */}
+          {/* Saved presets */}
           {presets.length > 0 && (
             <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
               <h2 className="mb-2 text-sm font-semibold">Saved presets</h2>
