@@ -1,6 +1,6 @@
 "use client";
 import type { TaskbarConfig } from "@/lib/storage";
-import { Volume2, Wifi, Battery, Languages } from "lucide-react";
+import { Volume2, Wifi, Battery, Search } from "lucide-react";
 
 const WEATHER_ICONS: Record<string, string> = {
   sun: "☀️", cloud: "⛅", rain: "🌧️", snow: "❄️", storm: "⛈️", fog: "🌫️",
@@ -27,14 +27,30 @@ export function TaskbarW11({ config, width, height }: { config: TaskbarConfig; w
 
       {/* Center icons */}
       <div className="tb-w11-center">
+        {/* Start button — real Win11 four-pane logo with gradient */}
         <div className="tb-w11-icon tb-w11-start">
-          <svg viewBox="0 0 24 24" width="22" height="22">
-            <rect x="2"  y="2"  width="9" height="9" fill="#0078D4"/>
-            <rect x="13" y="2"  width="9" height="9" fill="#0078D4"/>
-            <rect x="2"  y="13" width="9" height="9" fill="#0078D4"/>
-            <rect x="13" y="13" width="9" height="9" fill="#0078D4"/>
+          <svg viewBox="0 0 88 88" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="w11g" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#00BCF2"/>
+                <stop offset="100%" stopColor="#0078D4"/>
+              </linearGradient>
+            </defs>
+            <rect x="0"  y="0"  width="40" height="40" rx="2" fill="url(#w11g)"/>
+            <rect x="48" y="0"  width="40" height="40" rx="2" fill="url(#w11g)"/>
+            <rect x="0"  y="48" width="40" height="40" rx="2" fill="url(#w11g)"/>
+            <rect x="48" y="48" width="40" height="40" rx="2" fill="url(#w11g)"/>
           </svg>
         </div>
+
+        {/* Search bar */}
+        {config.tray.showSearch && (
+          <div className="tb-w11-search">
+            <Search size={13} style={{ opacity: 0.6, flexShrink: 0 }} />
+            <span>Search</span>
+          </div>
+        )}
+
         {config.icons.map(i => (
           <div key={i.uid} className={`tb-w11-icon ${i.isRunning ? "running" : ""} ${i.isActive ? "active" : ""}`}>
             <img src={i.svgDataUri} alt={i.name} />
