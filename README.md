@@ -37,4 +37,4 @@ Next.js · TypeScript · Tailwind · Vercel
 
 ## Live
 
-[taskbar.kjrlabs.in](https://taskbar.kjrlabs.in) <!-- update if URL differs -->
+[win-taskbar.vercel.app](https://win-taskbar.vercel.app)
