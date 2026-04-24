@@ -209,7 +209,10 @@ export default function LandingPage() {
 
         {/* NAV */}
         <nav className="nav">
-          <div className="nav-logo">Taskbar<em>.</em>Builder</div>
+          <div className="nav-logo" style={{display:"flex",alignItems:"center",gap:8}}>
+            <img src="/favicon-32.png" alt="" style={{width:22,height:22}} />
+            Taskbar<em>.</em>Builder
+          </div>
           <Link href="/builder" className="nav-pill">Open Builder →</Link>
         </nav>
 
@@ -411,3 +414,4 @@ export default function LandingPage() {
     </>
   );
 }
+
