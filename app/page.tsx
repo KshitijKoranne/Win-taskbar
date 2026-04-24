@@ -111,37 +111,83 @@ export default function HomePage() {
   async function exportAs(format: "png" | "jpg") {
     if (!taskbarRef.current) return;
     setExporting(true);
-    const el = taskbarRef.current;
     try {
-      // Temporarily remove the CSS scale so the node renders at full native resolution
-      el.style.transform = "none";
-      el.style.width = `${res.w}px`;
-      el.style.height = `${tbHeight}px`;
+      // Clone the visible node
+      const clone = taskbarRef.current.cloneNode(true) as HTMLElement;
 
-      // Wait one frame for layout to settle
+      // Remove transform and set exact native dimensions
+      clone.style.transform = "none";
+      clone.style.transformOrigin = "top left";
+      clone.style.width = `${res.w}px`;
+      clone.style.height = `${tbHeight}px`;
+      clone.style.position = "fixed";
+      clone.style.top = "0";
+      clone.style.left = "0";
+      clone.style.zIndex = "99999";
+      clone.style.overflow = "hidden";
+
+      // Append to body so it's visible and fully painted
+      document.body.appendChild(clone);
+
+      // Inline all <img> src and CSS background-image to base64
+      // so html-to-image doesn't need to re-fetch anything
+      const imgs = Array.from(clone.querySelectorAll("img")) as HTMLImageElement[];
+      await Promise.all(imgs.map(async (img) => {
+        if (!img.src || img.src.startsWith("data:")) return;
+        try {
+          const res2 = await fetch(img.src);
+          const blob = await res2.blob();
+          img.src = await new Promise<string>((ok, err) => {
+            const r = new FileReader();
+            r.onloadend = () => ok(r.result as string);
+            r.onerror = err;
+            r.readAsDataURL(blob);
+          });
+        } catch { /* leave as-is */ }
+      }));
+
+      // Inline CSS background-image urls
+      const allEls = Array.from(clone.querySelectorAll("*")) as HTMLElement[];
+      await Promise.all(allEls.map(async (el) => {
+        try {
+          const bg = window.getComputedStyle(el).backgroundImage;
+          const match = bg.match(/url\(["']?([^"')]+)["']?\)/);
+          if (match?.[1] && !match[1].startsWith("data:")) {
+            const r = await fetch(match[1]);
+            const blob = await r.blob();
+            const b64 = await new Promise<string>((ok, er) => {
+              const rd = new FileReader();
+              rd.onloadend = () => ok(rd.result as string);
+              rd.onerror = er;
+              rd.readAsDataURL(blob);
+            });
+            el.style.backgroundImage = `url("${b64}")`;
+          }
+        } catch { /* skip */ }
+      }));
+
+      // Two frames for paint to settle
       await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
       const fn = format === "png" ? toPng : toJpeg;
-      const url = await fn(el, {
+      const url = await fn(clone, {
         backgroundColor: format === "jpg" ? "#000000" : undefined,
         pixelRatio: 1,
         width: res.w,
         height: tbHeight,
-        cacheBust: true,
-        skipAutoScale: true,
+        cacheBust: false,
       });
+
+      document.body.removeChild(clone);
 
       const a = document.createElement("a");
       a.download = `taskbar-${config.version}-${res.w}x${tbHeight}.${format}`;
       a.href = url;
       a.click();
     } catch (err) {
-      console.error(err);
+      console.error("Export failed:", err);
+      alert("Export failed. See console for details.");
     } finally {
-      // Restore preview scale
-      el.style.transform = `scale(${previewScale})`;
-      el.style.width = `${res.w}px`;
-      el.style.height = `${tbHeight}px`;
       setExporting(false);
     }
   }

@@ -65,7 +65,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sy
 
 /* ========= WIN 7 TASKBAR ========= */
 .tb-w7 {
-  height: 40px;
+
   display: flex;
   align-items: stretch;
   background: linear-gradient(to bottom,
@@ -115,7 +115,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sy
 
 /* ========= WIN 10 TASKBAR ========= */
 .tb-w10 {
-  height: 40px;
+
   display: flex;
   align-items: stretch;
   background: rgba(0,0,0,0.85);
@@ -160,7 +160,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sy
 
 /* ========= WIN 11 TASKBAR ========= */
 .tb-w11 {
-  height: 48px;
+
   display: flex;
   align-items: stretch;
   justify-content: center;
