@@ -377,11 +377,11 @@ export default function HomePage() {
           <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
             <h2 className="mb-3 text-sm font-semibold">System tray</h2>
             <div className="space-y-2 text-sm">
-              {(["showWifi","showVolume","showBattery","showLanguage"] as const).map(k => (
+              {(["showWifi","showVolume","showBattery","showLanguage","showSearch"] as const).map(k => (
                 <label key={k} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={config.tray[k]}
                     onChange={e => setConfig(c => ({ ...c, tray: { ...c.tray, [k]: e.target.checked } }))} />
-                  {k.replace("show", "")}
+                  {{"showWifi":"Wi-Fi","showVolume":"Volume","showBattery":"Battery","showLanguage":"Language","showSearch":"Search bar (Win11)"}[k]}
                 </label>
               ))}
             </div>
@@ -439,3 +439,4 @@ export default function HomePage() {
     </div>
   );
 }
+
