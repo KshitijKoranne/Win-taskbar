@@ -42,8 +42,8 @@ export default function HomePage() {
   const [search, setSearch]             = useState("");
   const [exporting, setExporting]       = useState(false);
 
-  // Hidden full-resolution export target
-  const exportRef = useRef<HTMLDivElement>(null);
+  // Single ref — the preview IS the export source
+  const taskbarRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setPresets(loadPresets()); }, []);
@@ -109,26 +109,27 @@ export default function HomePage() {
   }
 
   async function exportAs(format: "png" | "jpg") {
-    if (!exportRef.current) return;
+    if (!taskbarRef.current) return;
     setExporting(true);
+    const el = taskbarRef.current;
     try {
-      // Make the hidden element briefly visible for html-to-image to capture
-      exportRef.current.style.visibility = "visible";
-      exportRef.current.style.position = "absolute";
-      exportRef.current.style.top = "-9999px";
+      // Temporarily remove the CSS scale so the node renders at full native resolution
+      el.style.transform = "none";
+      el.style.width = `${res.w}px`;
+      el.style.height = `${tbHeight}px`;
+
+      // Wait one frame for layout to settle
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
       const fn = format === "png" ? toPng : toJpeg;
-      const url = await fn(exportRef.current, {
-        backgroundColor: format === "jpg" ? "#000" : undefined,
-        // pixelRatio: 1 — we're already at native resolution, no upscaling needed
+      const url = await fn(el, {
+        backgroundColor: format === "jpg" ? "#000000" : undefined,
         pixelRatio: 1,
         width: res.w,
         height: tbHeight,
         cacheBust: true,
+        skipAutoScale: true,
       });
-
-      exportRef.current.style.visibility = "hidden";
-      exportRef.current.style.position = "fixed";
 
       const a = document.createElement("a");
       a.download = `taskbar-${config.version}-${res.w}x${tbHeight}.${format}`;
@@ -137,6 +138,10 @@ export default function HomePage() {
     } catch (err) {
       console.error(err);
     } finally {
+      // Restore preview scale
+      el.style.transform = `scale(${previewScale})`;
+      el.style.width = `${res.w}px`;
+      el.style.height = `${tbHeight}px`;
       setExporting(false);
     }
   }
@@ -182,24 +187,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HIDDEN FULL-RESOLUTION EXPORT TARGET */}
-      {/* Rendered at exact native pixel dimensions — this is what gets exported */}
-      <div
-        ref={exportRef}
-        style={{
-          position: "fixed",
-          top: "-9999px",
-          left: 0,
-          visibility: "hidden",
-          width: res.w,
-          height: tbHeight,
-          overflow: "hidden",
-        }}
-      >
-        <TaskbarComp config={config} width={res.w} height={tbHeight} />
-      </div>
 
-      {/* PREVIEW — CSS-scaled to fit UI */}
+      {/* PREVIEW — single render, CSS-scaled to fit UI */}
       <section className="mb-4">
         <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-dim)]">
           <span className="uppercase tracking-wider">
@@ -213,13 +202,16 @@ export default function HomePage() {
             height: previewHeight,
             background: "repeating-conic-gradient(#1a1a1a 0% 25%, #111 0% 50%) 0 0 / 20px 20px",
           }}>
-          {/* Scale container: render at full width, CSS scale down */}
-          <div style={{
-            width: res.w,
-            height: tbHeight,
-            transform: `scale(${previewScale})`,
-            transformOrigin: "top left",
-          }}>
+          {/* Scale container: render at full width, CSS scale down. ref is used for export. */}
+          <div
+            ref={taskbarRef}
+            style={{
+              width: res.w,
+              height: tbHeight,
+              transform: `scale(${previewScale})`,
+              transformOrigin: "top left",
+            }}
+          >
             <TaskbarComp config={config} width={res.w} height={tbHeight} />
           </div>
         </div>
