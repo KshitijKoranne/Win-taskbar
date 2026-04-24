@@ -14,6 +14,7 @@ export type TrayConfig = {
   showVolume: boolean;
   showBattery: boolean;
   showLanguage: boolean;
+  showSearch: boolean;
 };
 
 export type WeatherConfig = {
@@ -83,7 +84,8 @@ export const DEFAULT_CONFIG: TaskbarConfig = {
   icons: [],
   date: "Mon, Apr 21",
   time: "10:30 AM",
-  tray: { showWifi: true, showVolume: true, showBattery: true, showLanguage: false },
+  tray: { showWifi: true, showVolume: true, showBattery: true, showLanguage: false, showSearch: true },
   weather: { show: true, temp: "24°C", condition: "Partly Cloudy", icon: "cloud" },
   resolutionIdx: 4, // 1920×1080 default
 };
+
