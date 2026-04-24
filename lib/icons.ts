@@ -89,6 +89,51 @@ const SI_APPS: SiEntry[] = [
   { slug: "siGogdotcom",         name: "GOG",          whiteOnly: true, category: "gaming" },
   { slug: "siRiotgames",         name: "Riot",                          category: "gaming" },
   { slug: "siTwitch",            name: "Twitch",                        category: "gaming" },
+  // --- extra dev ---
+  { slug: "siVisualstudiocode",  name: "VS Code",                       category: "dev" },
+  { slug: "siWebstorm",          name: "WebStorm",                      category: "dev" },
+  { slug: "siPycharm",           name: "PyCharm",                       category: "dev" },
+  { slug: "siAndroidstudio",     name: "Android Studio",                category: "dev" },
+  { slug: "siTerminal",          name: "Terminal",     whiteOnly: true, category: "dev" },
+  { slug: "siKubernetes",        name: "Kubernetes",                    category: "dev" },
+  { slug: "siJira",              name: "Jira",                          category: "dev" },
+  { slug: "siSlack",             name: "Slack",                         category: "dev" },
+  // --- extra browser ---
+  { slug: "siTorbrowser",        name: "Tor",                           category: "browser" },
+  // --- extra social ---
+  { slug: "siSnapchat",          name: "Snapchat",                      category: "social" },
+  { slug: "siTiktok",            name: "TikTok",       whiteOnly: true, category: "social" },
+  { slug: "siThreads",           name: "Threads",      whiteOnly: true, category: "social" },
+  { slug: "siMastodon",          name: "Mastodon",                      category: "social" },
+  { slug: "siSkype",             name: "Skype",                         category: "social" },
+  { slug: "siGooglemeet",        name: "Meet",                          category: "social" },
+  { slug: "siMicrosoftteams",    name: "Teams",        whiteOnly: true, category: "social" },
+  // --- extra media ---
+  { slug: "siPlex",              name: "Plex",                          category: "media" },
+  { slug: "siSoundcloud",        name: "SoundCloud",                    category: "media" },
+  { slug: "siApplemusic",        name: "Apple Music",  whiteOnly: true, category: "media" },
+  { slug: "siDeezer",            name: "Deezer",                        category: "media" },
+  { slug: "siKodi",              name: "Kodi",                          category: "media" },
+  // --- extra productivity ---
+  { slug: "siAsana",             name: "Asana",                         category: "productivity" },
+  { slug: "siLinear",            name: "Linear",       whiteOnly: true, category: "productivity" },
+  { slug: "siMiro",              name: "Miro",                          category: "productivity" },
+  { slug: "siAirtable",          name: "Airtable",                      category: "productivity" },
+  { slug: "siClickup",           name: "ClickUp",                       category: "productivity" },
+  { slug: "siConfluence",        name: "Confluence",                    category: "productivity" },
+  { slug: "siMicrosoftonenote",  name: "OneNote",                       category: "productivity" },
+  // --- extra gaming ---
+  { slug: "siPlaystation",       name: "PlayStation",  whiteOnly: true, category: "gaming" },
+  { slug: "siXbox",              name: "Xbox",                          category: "gaming" },
+  { slug: "siNintendoswitch",    name: "Nintendo",     whiteOnly: true, category: "gaming" },
+  { slug: "siMinecraft",         name: "Minecraft",                     category: "gaming" },
+  { slug: "siBlizzard",          name: "Blizzard",     whiteOnly: true, category: "gaming" },
+  // --- extra creative ---
+  { slug: "siDavinciresolve",    name: "DaVinci",                       category: "creative" },
+  { slug: "siSketch",            name: "Sketch",                        category: "creative" },
+  { slug: "siInvision",          name: "InVision",                      category: "creative" },
+  { slug: "siZeplin",            name: "Zeplin",                        category: "creative" },
+  { slug: "siProcreate",         name: "Procreate",    whiteOnly: true, category: "creative" },
 ];
 
 const SI_ICONS: LibraryIcon[] = SI_APPS
@@ -401,3 +446,4 @@ export const CATEGORIES: { key: LibraryIcon["category"]; label: string }[] = [
   { key: "media",       label: "Media" },
   { key: "gaming",      label: "Gaming" },
 ];
+
