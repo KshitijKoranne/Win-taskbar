@@ -234,13 +234,13 @@ export default function HomePage() {
       </header>
 
 
-      {/* PREVIEW — single render, CSS-scaled to fit UI */}
-      <section className="mb-4">
-        <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-dim)]">
+      {/* PREVIEW — centered */}
+      <section className="mb-4 flex flex-col items-center">
+        <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-dim)] w-full max-w-[900px]">
           <span className="uppercase tracking-wider">
-            {VERSION_LABELS[config.version]} — {res.label} — taskbar {res.w}×{tbHeight}px
+            {VERSION_LABELS[config.version]} — {res.label} — {res.w}×{tbHeight}px
           </span>
-          <span>Preview scaled to fit (export is exact {res.w}px wide)</span>
+          <span>export is exact {res.w}px wide</span>
         </div>
         <div className="rounded-lg border border-[var(--border)] overflow-hidden"
           style={{
@@ -248,7 +248,6 @@ export default function HomePage() {
             height: previewHeight,
             background: "repeating-conic-gradient(#1a1a1a 0% 25%, #111 0% 50%) 0 0 / 20px 20px",
           }}>
-          {/* Scale container: render at full width, CSS scale down. ref is used for export. */}
           <div
             ref={taskbarRef}
             style={{
@@ -261,44 +260,12 @@ export default function HomePage() {
             <TaskbarComp config={config} width={res.w} height={tbHeight} />
           </div>
         </div>
-        <p className="mt-1 text-xs text-[var(--text-dim)]">
+        <p className="mt-1 text-xs text-[var(--text-dim)] w-full max-w-[900px]">
           Click icon in taskbar to cycle: idle → running → {config.version === "w11" ? "active → " : ""}remove
         </p>
       </section>
 
-      {/* DRAG / REORDER */}
-      <section className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">Icons in taskbar ({config.icons.length})</h2>
-          {config.icons.length > 0 && (
-            <button onClick={() => setConfig(c => ({ ...c, icons: [] }))}
-              className="text-xs text-[var(--text-dim)] hover:text-red-400">Clear all</button>
-          )}
-        </div>
-        {config.icons.length === 0
-          ? <p className="text-xs text-[var(--text-dim)]">Add icons from the library below.</p>
-          : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter}
-              onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-              <SortableContext items={config.icons.map(i => i.uid)}>
-                <div className="flex flex-wrap gap-2">
-                  {config.icons.map(icon => (
-                    <SortableIcon key={icon.uid} icon={icon} onClick={handleIconClick} />
-                  ))}
-                </div>
-              </SortableContext>
-              <DragOverlay>
-                {activeIcon && (
-                  <div className="lib-icon drag-overlay">
-                    <img src={activeIcon.svgDataUri} alt={activeIcon.name} />
-                    <span>{activeIcon.name}</span>
-                  </div>
-                )}
-              </DragOverlay>
-            </DndContext>
-          )}
-        <p className="mt-2 text-xs text-[var(--text-dim)]">Drag to reorder.</p>
-      </section>
+
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* CONTROLS */}
@@ -315,6 +282,40 @@ export default function HomePage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Icons in taskbar — compact */}
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Taskbar icons ({config.icons.length})</h2>
+              {config.icons.length > 0 && (
+                <button onClick={() => setConfig(c => ({ ...c, icons: [] }))}
+                  className="text-xs text-[var(--text-dim)] hover:text-red-400">Clear all</button>
+              )}
+            </div>
+            {config.icons.length === 0
+              ? <p className="text-xs text-[var(--text-dim)]">Click icons in the library →</p>
+              : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter}
+                  onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                  <SortableContext items={config.icons.map(i => i.uid)}>
+                    <div className="flex flex-wrap gap-1.5">
+                      {config.icons.map(icon => (
+                        <SortableIcon key={icon.uid} icon={icon} onClick={handleIconClick} />
+                      ))}
+                    </div>
+                  </SortableContext>
+                  <DragOverlay>
+                    {activeIcon && (
+                      <div className="lib-icon drag-overlay">
+                        <img src={activeIcon.svgDataUri} alt={activeIcon.name} />
+                        <span>{activeIcon.name}</span>
+                      </div>
+                    )}
+                  </DragOverlay>
+                </DndContext>
+              )}
+            <p className="mt-2 text-xs text-[var(--text-dim)]">Drag to reorder · click to cycle state</p>
           </div>
 
           {/* Resolution */}
@@ -439,5 +440,6 @@ export default function HomePage() {
     </div>
   );
 }
+
 
 
