@@ -1,9 +1,9 @@
 import type { TaskbarConfig } from "@/lib/storage";
 import { Volume2, Wifi, Battery, Languages, Search } from "lucide-react";
 
-export function TaskbarW10({ config, width, height }: { config: TaskbarConfig; width: number; height: number }) {
+export function TaskbarW10({ config, width, height, edgeRadius = 0 }: { config: TaskbarConfig; width: number; height: number; edgeRadius?: number }) {
   return (
-    <div className="tb-w10" style={{ width, height, minWidth: "unset" }}>
+    <div className="tb-w10" style={{ width, height, minWidth: "unset", overflow: "hidden", borderRadius: edgeRadius }}>
       <div className="tb-w10-start">
         <svg viewBox="0 0 24 24"><path d="M3 5l8-1v8H3zm9-1l9-1v9h-9zM3 13h8v8l-8-1zm9 0h9v9l-9-1z"/></svg>
       </div>

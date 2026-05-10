@@ -1,4 +1,5 @@
-export type WinVersion = "xp" | "w7" | "w10" | "w11";
+export type WinVersion = "w7" | "w10" | "w11";
+export type TaskbarEdges = "square" | "rounded";
 
 export type TaskbarIcon = {
   uid: string;
@@ -55,6 +56,7 @@ export type TaskbarConfig = {
   tray: TrayConfig;
   weather: WeatherConfig;
   resolutionIdx: number; // index into RESOLUTIONS
+  taskbarEdges: TaskbarEdges;
 };
 
 export type Preset = {
@@ -87,5 +89,5 @@ export const DEFAULT_CONFIG: TaskbarConfig = {
   tray: { showWifi: true, showVolume: true, showBattery: true, showLanguage: false, showSearch: true },
   weather: { show: true, temp: "24°C", condition: "Partly Cloudy", icon: "cloud" },
   resolutionIdx: 4, // 1920×1080 default
+  taskbarEdges: "square",
 };
-

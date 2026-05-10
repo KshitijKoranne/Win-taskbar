@@ -20,7 +20,7 @@ import { Download, Save, Trash2, Upload } from "lucide-react";
 
 const TASKBARS = { w7: TaskbarW7, w10: TaskbarW10, w11: TaskbarW11 } as const;
 const VERSION_LABELS: Record<WinVersion, string> = {
-  xp: "Windows XP", w7: "Windows 7", w10: "Windows 10", w11: "Windows 11",
+  w7: "Windows 7", w10: "Windows 10", w11: "Windows 11",
 };
 const WEATHER_CONDITIONS = ["Sunny","Partly Cloudy","Cloudy","Rainy","Snowy","Stormy","Foggy"] as const;
 const WEATHER_ICONS       = ["sun","cloud","cloud","rain","snow","storm","fog"] as const;
@@ -52,6 +52,8 @@ export default function HomePage() {
 
   const res = RESOLUTIONS[config.resolutionIdx];
   const tbHeight = res.taskbarHeight[config.version as keyof typeof res.taskbarHeight] ?? 48;
+  const taskbarEdges = config.taskbarEdges ?? "square";
+  const edgeRadius = taskbarEdges === "rounded" ? 8 : 0;
 
   // Scale factor for the preview: fit PREVIEW_WIDTH
   const previewScale = PREVIEW_WIDTH / res.w;
@@ -125,6 +127,7 @@ export default function HomePage() {
       clone.style.left = "0";
       clone.style.zIndex = "99999";
       clone.style.overflow = "hidden";
+      clone.style.borderRadius = `${edgeRadius}px`;
 
       // Append to body so it's visible and fully painted
       document.body.appendChild(clone);
@@ -255,9 +258,11 @@ export default function HomePage() {
               height: tbHeight,
               transform: `scale(${previewScale})`,
               transformOrigin: "top left",
+              borderRadius: edgeRadius,
+              overflow: "hidden",
             }}
           >
-            <TaskbarComp config={config} width={res.w} height={tbHeight} />
+            <TaskbarComp config={config} width={res.w} height={tbHeight} edgeRadius={edgeRadius} />
           </div>
         </div>
         <p className="mt-1 text-xs text-[var(--text-dim)] w-full max-w-[900px]">
@@ -279,6 +284,18 @@ export default function HomePage() {
                 <button key={v} onClick={() => setConfig(c => ({ ...c, version: v }))}
                   className={`rounded-md border px-3 py-2 text-sm transition text-left ${config.version === v ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
                   {VERSION_LABELS[v]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+            <h2 className="mb-3 text-sm font-semibold">Taskbar edges</h2>
+            <div className="grid grid-cols-2 gap-2">
+              {(["square", "rounded"] as const).map(edge => (
+                <button key={edge} onClick={() => setConfig(c => ({ ...c, taskbarEdges: edge }))}
+                  className={`rounded-md border px-3 py-2 text-sm capitalize transition ${taskbarEdges === edge ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--text-dim)]"}`}>
+                  {edge}
                 </button>
               ))}
             </div>
@@ -440,6 +457,5 @@ export default function HomePage() {
     </div>
   );
 }
-
 
 

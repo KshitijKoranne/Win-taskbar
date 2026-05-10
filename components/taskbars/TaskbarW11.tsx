@@ -6,9 +6,9 @@ const WEATHER_ICONS: Record<string, string> = {
   sun: "☀️", cloud: "⛅", rain: "🌧️", snow: "❄️", storm: "⛈️", fog: "🌫️",
 };
 
-export function TaskbarW11({ config, width, height }: { config: TaskbarConfig; width: number; height: number }) {
+export function TaskbarW11({ config, width, height, edgeRadius = 0 }: { config: TaskbarConfig; width: number; height: number; edgeRadius?: number }) {
   return (
-    <div className="tb-w11" style={{ width, height, minWidth: "unset" }}>
+    <div className="tb-w11" style={{ width, height, minWidth: "unset", borderRadius: edgeRadius }}>
       {/* Weather — absolute far left */}
       {config.weather.show && (
         <div style={{

@@ -20,9 +20,9 @@ function StartOrb() {
   );
 }
 
-export function TaskbarW7({ config, width, height }: { config: TaskbarConfig; width: number; height: number }) {
+export function TaskbarW7({ config, width, height, edgeRadius = 0 }: { config: TaskbarConfig; width: number; height: number; edgeRadius?: number }) {
   return (
-    <div className="tb-w7" style={{ width, height: height, minWidth: "unset", overflow: "hidden" }}>
+    <div className="tb-w7" style={{ width, height: height, minWidth: "unset", overflow: "hidden", borderRadius: edgeRadius }}>
       <StartOrb />
       <div className="tb-w7-icons" style={{ flex: 1 }}>
         {config.icons.map(i => (
